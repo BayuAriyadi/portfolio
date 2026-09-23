@@ -1,0 +1,537 @@
+---
+const title = "Hermes Agent & Telegram Bot — bayu.dev";
+const description = "Autonomous AI agent running on homelab Proxmox with Telegram bot integration, custom LLM endpoint, and 1M token context.";
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="generator" content={Astro.generator} />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card: #12131c;
+      --border: #1e2030;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #10b981;
+      --accent-dim: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.12);
+      --tag: #1a1c2e;
+      --tag-border: #262940;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    code, .mono { font-family: 'Fira Code', monospace; }
+
+    a { color: var(--accent); text-decoration: none; transition: all 0.2s; }
+    a:hover { color: var(--accent-dim); }
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* === NAV === */
+    header {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(9, 10, 15, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100; padding: 0.9rem 0;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+    header.visible { transform: translateY(0); }
+
+    nav { display: flex; justify-content: space-between; align-items: center; }
+
+    .brand {
+      font-family: 'Fira Code', monospace;
+      font-weight: 700; font-size: 1.05rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .nav-links { display: flex; gap: 2rem; font-size: 0.95rem; font-weight: 500; }
+    .nav-links a { color: var(--muted); }
+    .nav-links a:hover { color: var(--text); }
+
+    /* === HERO === */
+    .hero {
+      padding: 10rem 0 4rem 0;
+    }
+    @media (max-width: 768px) {
+      .hero { padding-top: 8rem; }
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--tag); border: 1px solid var(--tag-border);
+      padding: 0.3rem 0.9rem; border-radius: 20px;
+      font-size: 0.8rem; color: var(--accent); margin-bottom: 1.5rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+      font-weight: 800; letter-spacing: -0.03em;
+      line-height: 1.1; margin-bottom: 1rem;
+    }
+
+    .hero p {
+      color: var(--muted); font-size: 1.1rem; margin-bottom: 2rem;
+      max-width: 680px;
+    }
+
+    .btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer;
+      transition: all 0.25s; font-family: inherit;
+    }
+
+    .btn-primary { background: var(--accent); color: #090a0f; border: none; }
+    .btn-primary:hover {
+      background: var(--accent-dim); color: #090a0f;
+      transform: translateY(-2px); box-shadow: 0 6px 24px var(--accent-glow);
+    }
+
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent); color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* === SECTIONS === */
+    section {
+      padding: 5rem 0; border-top: 1px solid var(--border);
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    section.visible { opacity: 1; transform: translateY(0); }
+
+    .sec-head {
+      font-size: 2rem; font-weight: 700;
+      margin-bottom: 0.4rem; letter-spacing: -0.02em;
+    }
+
+    .sec-desc { color: var(--muted); margin-bottom: 3rem; }
+
+    /* === ARCHITECTURE === */
+    .arch-flow {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: wrap;
+      padding: 2.5rem 1.5rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .arch-node {
+      background: var(--tag); border: 1px solid var(--tag-border);
+      padding: 1rem 1.5rem; border-radius: 10px;
+      text-align: center; min-width: 140px;
+      transition: border-color 0.3s;
+    }
+    .arch-node:hover { border-color: rgba(16,185,129,0.35); }
+
+    .arch-node .icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+
+    .arch-node .label {
+      font-size: 0.85rem; font-weight: 600;
+      color: var(--text); display: block;
+    }
+
+    .arch-node .sub {
+      font-size: 0.7rem; color: var(--muted);
+      font-family: 'Fira Code', monospace;
+      display: block; margin-top: 0.2rem;
+    }
+
+    .arch-arrow {
+      color: var(--accent); font-size: 1.5rem;
+      padding: 0 0.6rem; flex-shrink: 0;
+      font-family: 'Fira Code', monospace;
+    }
+
+    @media (max-width: 768px) {
+      .arch-flow { flex-direction: column; gap: 0; }
+      .arch-arrow { transform: rotate(90deg); padding: 0.4rem 0; }
+    }
+
+    /* === FEATURES === */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.75rem;
+      transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+      border-color: rgba(16,185,129,0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    }
+
+    .feature-card h3 {
+      font-size: 1.05rem; font-weight: 600;
+      margin-bottom: 0.5rem; color: var(--text);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .feature-card p {
+      color: var(--muted); font-size: 0.9rem; line-height: 1.6;
+    }
+
+    /* === TECH STACK === */
+    .stack-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+
+    .stack-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem;
+      text-align: center; transition: all 0.3s ease;
+    }
+    .stack-item:hover {
+      border-color: rgba(16,185,129,0.35);
+      transform: translateY(-2px);
+    }
+
+    .stack-item .icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
+
+    .stack-item .name {
+      font-weight: 600; font-size: 0.9rem;
+      color: var(--text); display: block;
+    }
+
+    .stack-item .desc {
+      font-size: 0.75rem; color: var(--muted);
+      font-family: 'Fira Code', monospace;
+      margin-top: 0.2rem; display: block;
+    }
+
+    /* === SPECS === */
+    .specs {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .spec-item label {
+      display: block; color: var(--muted);
+      font-size: 0.75rem; margin-bottom: 0.2rem;
+    }
+
+    .spec-item val {
+      color: var(--accent); font-size: 1rem; font-weight: 600;
+    }
+
+    /* === TERMINAL === */
+    .term {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+      opacity: 0; transform: translateY(20px);
+      transition: all 0.6s ease 0.3s;
+    }
+    .term.visible { opacity: 1; transform: translateY(0); }
+
+    .term-bar {
+      background: #181926; padding: 0.7rem 1rem;
+      display: flex; align-items: center; gap: 0.45rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .td { width: 10px; height: 10px; border-radius: 50%; }
+    .td-r { background: #ef4444; } .td-y { background: #f59e0b; } .td-g { background: #10b981; }
+    .term-title { margin-left: auto; font-size: 0.75rem; color: var(--muted); font-family: 'Fira Code', monospace; }
+
+    .term-body {
+      padding: 1.25rem; font-family: 'Fira Code', monospace;
+      font-size: 0.8rem; line-height: 1.8; color: #cbd5e1;
+    }
+    .term-body p { margin-bottom: 0.25rem; }
+    .p { color: var(--accent); }
+    .dim { color: var(--muted); }
+    .ok { color: var(--accent); }
+
+    /* === ANIMATIONS === */
+    .reveal { opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+
+    footer {
+      padding: 3rem 0; text-align: center;
+      color: var(--muted); font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <header id="hdr">
+    <div class="container nav">
+      <div class="brand"><div class="dot"></div> bayu.dev</div>
+      <div class="nav-links">
+        <a href="/#about">about</a>
+        <a href="/#projects">projects</a>
+        <a href="/#homelab">homelab</a>
+        <a href="/#contact">contact</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- HERO -->
+    <section class="hero" style="border:none;">
+      <div class="badge">● featured project</div>
+      <h1>Hermes Agent & Telegram Bot</h1>
+      <p>
+        Autonomous AI agent yang berjalan di homelab Proxmox, terintegrasi langsung dengan Telegram. Dirancang untuk menjadi asisten personal yang bisa mengakses file, menjalankan kode, dan berinteraksi secara natural lewat chat.
+      </p>
+      <div class="btns">
+        <a href="https://hermes-agent.nousresearch.com" target="_blank" class="btn btn-primary">Documentation</a>
+        <a href="/" class="btn btn-ghost">Back to Home</a>
+      </div>
+    </section>
+
+    <!-- TERMINAL -->
+    <section style="border-top:none; padding-top: 2rem;">
+      <div class="term" id="term-demo">
+        <div class="term-bar">
+          <div class="td td-r"></div><div class="td td-y"></div><div class="td td-g"></div>
+          <span class="term-title">hermes@homelab ~</span>
+        </div>
+        <div class="term-body">
+          <p><span class="p">$</span> hermes agent --status</p>
+          <p class="ok">✔ Agent Kafka (Telegram) active</p>
+          <p class="ok">✔ LLM endpoint: 9router (95+ models)</p>
+          <p class="ok">✔ Context window: 1,000,000 tokens</p>
+          <p><span class="p">$</span> hermes profile list</p>
+          <p class="dim">default, coding, research, creative</p>
+          <p><span class="p">$</span> hermes cron list</p>
+          <p class="ok">✔ 3 scheduled jobs active</p>
+          <p><span class="p">$</span> uptime</p>
+          <p class="dim" id="uptime-text">loading...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section>
+      <h2 class="sec-head">Architecture</h2>
+      <p class="sec-desc">Bagaimana Hermes bekerja dari user chat sampai AI response.</p>
+      <div class="arch-flow reveal">
+        <div class="arch-node">
+          <div class="icon">👤</div>
+          <span class="label">User</span>
+          <span class="sub">Telegram chat</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="icon">📱</div>
+          <span class="label">Telegram Bot API</span>
+          <span class="sub">webhook / polling</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="icon">🤖</div>
+          <span class="label">Hermes Agent</span>
+          <span class="sub">Python runtime</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="icon">⚡</div>
+          <span class="label">9Router Gateway</span>
+          <span class="sub">LLM routing</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="icon">🧠</div>
+          <span class="label">LLM Models</span>
+          <span class="sub">Claude / GPT / Gemini</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section>
+      <h2 class="sec-head">Features</h2>
+      <p class="sec-desc">Kemampuan utama yang membuat Hermes powerful.</p>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <h3>🤖 Autonomous AI Agent</h3>
+          <p>
+            Berjalan secara mandiri tanpa supervision. Bisa menjalankan tool, mengakses file system, browsing web, dan menjalankan kode Python secara langsung.
+          </p>
+        </div>
+        <div class="feature-card reveal reveal-d1">
+          <h3>📱 Telegram Bot Integration</h3>
+          <p>
+            Interaksi natural lewat chat Telegram. Kirim pesan, foto, dokumen. Bot merespon secara context-aware dengan memori percakapan sebelumnya.
+          </p>
+        </div>
+        <div class="feature-card reveal reveal-d2">
+          <h3>⚡ Custom LLM Endpoint</h3>
+          <p>
+            Menggunakan 9Router sebagai gateway untuk mengakses 95+ model LLM. Claude 4.5, GPT-5, Gemini, DeepSeek, dan lainnya lewat satu API endpoint.
+          </p>
+        </div>
+        <div class="feature-card reveal reveal-d3">
+          <h3>📏 1M Token Context</h3>
+          <p>
+            Context window hingga 1 juta token memungkinkan analisis dokumen panjang, code review besar, dan percakapan tanpa kehilangan konteks.
+          </p>
+        </div>
+        <div class="feature-card reveal">
+          <h3>🔒 Sandbox Profile Isolation</h3>
+          <p>
+            Setiap profil memiliki workspace, memory, skills, dan plugin terisolasi. Default, coding, research, creative, masing-masing punya environment sendiri.
+          </p>
+        </div>
+        <div class="feature-card reveal reveal-d1">
+          <h3>💾 Persistent Memory</h3>
+          <p>
+            Ingatan persisten antar sesi. Hermes mengingat preferensi, proyek sebelumnya, dan konteks penting tanpa perlu diulang setiap kali mulai percakapan baru.
+          </p>
+        </div>
+        <div class="feature-card reveal reveal-d2">
+          <h3>⏰ Cron Job Scheduling</h3>
+          <p>
+            Penjadwalan tugas otomatis. Monitoring, digest email, price alerts, atau tugas berkala lainnya dijalankan secara terjadwal tanpa intervensi manual.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section>
+      <h2 class="sec-head">Tech Stack</h2>
+      <p class="sec-desc">Teknologi yang digunakan untuk membangun dan menjalankan Hermes.</p>
+      <div class="stack-grid">
+        <div class="stack-item reveal">
+          <div class="icon">🐍</div>
+          <span class="name">Python</span>
+          <span class="desc">runtime core</span>
+        </div>
+        <div class="stack-item reveal reveal-d1">
+          <div class="icon">🤖</div>
+          <span class="name">Hermes Agent</span>
+          <span class="desc">AI framework</span>
+        </div>
+        <div class="stack-item reveal reveal-d2">
+          <div class="icon">📱</div>
+          <span class="name">Telegram Bot API</span>
+          <span class="desc">chat interface</span>
+        </div>
+        <div class="stack-item reveal reveal-d3">
+          <div class="icon">🐳</div>
+          <span class="name">Docker</span>
+          <span class="desc">containerization</span>
+        </div>
+        <div class="stack-item reveal">
+          <div class="icon">⚡</div>
+          <span class="name">9Router</span>
+          <span class="desc">LLM gateway</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOMELAB SPECS -->
+    <section>
+      <h2 class="sec-head">Runtime Environment</h2>
+      <p class="sec-desc">Infrastruktur yang menjalankan Hermes di homelab.</p>
+      <div class="specs">
+        <div class="specs-grid">
+          <div class="spec-item"><label>// HOST</label><val>Proxmox VE (VM)</val></div>
+          <div class="spec-item"><label>// CPU</label><val>Intel i3-1215U (8 vCPU)</val></div>
+          <div class="spec-item"><label>// RAM</label><val>7.4 GB</val></div>
+          <div class="spec-item"><label>// STORAGE</label><val>NVMe + SSD</val></div>
+          <div class="spec-item"><label>// OS</label><val>Linux x86_64</val></div>
+          <div class="spec-item"><label>// ACCESS</label><val>Cloudflare Tunnel</val></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BACK BUTTON -->
+    <section style="border-top:none; padding: 3rem 0;">
+      <div style="text-align: center;">
+        <a href="/" class="btn btn-ghost">← Back to bayu.dev</a>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2026 Bayu Ariyadi · Built with Astro · Deployed via Cloudflare Pages</p>
+    </footer>
+  </div>
+
+  <script>
+    // Nav
+    const hdr = document.getElementById('hdr');
+    window.addEventListener('scroll', () => {
+      hdr.classList.toggle('visible', window.scrollY > 300);
+    });
+
+    // Scroll reveal
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('section, .term, .reveal').forEach(el => io.observe(el));
+
+    // Uptime
+    const start = Date.now();
+    function updateUptime() {
+      const s = Math.floor((Date.now() - start) / 1000);
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      document.getElementById('uptime-text').textContent =
+        ` up ${h}h ${m}m ${sec}s, 1 user, load average: 0.42, 0.38, 0.31`;
+    }
+    updateUptime();
+    setInterval(updateUptime, 1000);
+  </script>
+</body>
+</html>

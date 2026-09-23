@@ -1,0 +1,907 @@
+---
+import { site, hero, about, projects, skills, experience, homelab, contact, terminal } from '../data/config';
+
+const title = site.title;
+const description = site.description;
+---
+
+<!DOCTYPE html>
+<html lang={site.lang}>
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="generator" content={Astro.generator} />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card: #12131c;
+      --border: #1e2030;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #10b981;
+      --accent-dim: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.12);
+      --tag: #1a1c2e;
+      --tag-border: #262940;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    code, .mono { font-family: 'Fira Code', monospace; }
+
+    a { color: var(--accent); text-decoration: none; transition: all 0.2s; }
+    a:hover { color: var(--accent-dim); }
+
+    a:focus-visible,
+    button:focus-visible,
+    .nav-links a:focus-visible,
+    .btn:focus-visible,
+    .skill-tab:focus-visible,
+    .terminal-input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* === FLOATING PILL NAV === */
+    header {
+      position: fixed; top: 1.2rem; left: 50%;
+      transform: translateX(-50%) translateY(0);
+      z-index: 100;
+      width: auto;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    header.hidden { transform: translateX(-50%) translateY(-120%); opacity: 0; pointer-events: none; }
+
+    nav {
+      display: flex; align-items: center; gap: 0.25rem;
+      background: rgba(9, 10, 15, 0.75);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border: 1px solid rgba(30, 32, 48, 0.6);
+      border-radius: 999px;
+      padding: 0.45rem 0.55rem;
+      box-shadow:
+        0 0 0 1px rgba(16, 185, 129, 0.06),
+        0 4px 24px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .brand {
+      font-family: 'Fira Code', monospace;
+      font-weight: 700; font-size: 0.9rem;
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      color: var(--text);
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .brand:hover { background: rgba(16, 185, 129, 0.08); }
+
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(16, 185, 129, 0.3);
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.85)} }
+
+    .nav-links { display: flex; align-items: center; gap: 0.1rem; }
+
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      position: relative;
+    }
+    .nav-links a:hover,
+    .nav-links a:focus-visible {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .hamburger {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      padding: 0.45rem;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .hamburger span {
+      display: block; width: 18px; height: 1.5px;
+      background: var(--text);
+      margin: 4px auto;
+      transition: all 0.3s;
+      border-radius: 2px;
+    }
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(3.5px, 3.5px); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(3.5px, -3.5px); }
+
+    @media (max-width: 768px) {
+      header { top: 1rem; width: auto; }
+      nav { padding: 0.35rem 0.45rem; }
+      .hamburger { display: block; }
+      .nav-links {
+        position: absolute;
+        top: calc(100% + 0.6rem);
+        left: 50%; transform: translateX(-50%);
+        background: rgba(9, 10, 15, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        flex-direction: column;
+        padding: 0.5rem;
+        gap: 0.15rem;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        display: none;
+        min-width: 180px;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { width: 100%; text-align: center; padding: 0.6rem 1rem; }
+    }
+
+    /* === HERO === */
+    .hero {
+      padding: 10rem 0 5rem 0;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 3rem; align-items: center;
+    }
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; padding-top: 8rem; }
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--tag); border: 1px solid var(--tag-border);
+      padding: 0.3rem 0.9rem; border-radius: 20px;
+      font-size: 0.8rem; color: var(--accent); margin-bottom: 1.5rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 3.8rem);
+      font-weight: 800; letter-spacing: -0.03em;
+      line-height: 1.1; margin-bottom: 1rem;
+    }
+
+    .hero p {
+      color: var(--muted); font-size: 1.1rem; margin-bottom: 2rem;
+    }
+
+    .btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer;
+      transition: all 0.25s; font-family: inherit;
+    }
+
+    .btn-primary { background: var(--accent); color: #090a0f; border: none; }
+    .btn-primary:hover {
+      background: var(--accent-dim); color: #090a0f;
+      transform: translateY(-2px); box-shadow: 0 6px 24px var(--accent-glow);
+    }
+
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent); color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* === SECTIONS === */
+    section {
+      padding: 5rem 0; border-top: 1px solid var(--border);
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    section.visible { opacity: 1; transform: translateY(0); }
+
+    .sec-head {
+      font-size: 2rem; font-weight: 700;
+      margin-bottom: 0.4rem; letter-spacing: -0.02em;
+    }
+
+    .sec-desc { color: var(--muted); margin-bottom: 3rem; }
+
+    /* === CARDS === */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem;
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      border-color: rgba(16,185,129,0.35);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    }
+
+    .card h3 {
+      font-size: 1.2rem; font-weight: 600;
+      margin-bottom: 0.75rem; color: var(--text);
+    }
+
+    .card p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.25rem; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    .tag {
+      background: var(--tag); border: 1px solid var(--tag-border);
+      color: var(--muted); padding: 0.2rem 0.65rem;
+      border-radius: 5px; font-size: 0.75rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* === SKILLS === */
+    .skills-tabs {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-bottom: 2rem; justify-content: center;
+    }
+
+    .skill-tab {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 0.5rem 1.25rem;
+      border-radius: 20px; font-size: 0.85rem;
+      font-weight: 500; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .skill-tab:hover { border-color: var(--accent); color: var(--accent); }
+    .skill-tab.active {
+      background: var(--accent); color: #090a0f; border-color: var(--accent);
+    }
+    .skill-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .skills-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .skill-tag {
+      background: var(--card); border: 1px solid var(--tag-border);
+      padding: 1rem; border-radius: 8px; text-align: center;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.3s ease;
+    }
+    .skill-tag.visible { opacity: 1; transform: translateY(0); }
+    .skill-tag:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .skill-tag.hidden { display: none; }
+
+    .skill-tag-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem; font-weight: 500;
+      color: var(--text);
+    }
+    .skill-tag-category {
+      font-size: 0.7rem; color: var(--accent);
+      margin-top: 0.25rem; text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* === TIMELINE === */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 3rem;
+      opacity: 0; transform: translateX(-20px);
+      transition: all 0.6s ease;
+    }
+    .timeline-item.visible { opacity: 1; transform: translateX(0); }
+
+    .timeline-dot {
+      position: absolute;
+      left: -2rem; top: 0.25rem;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--border);
+    }
+
+    .timeline-date {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem; color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-title {
+      font-size: 1.15rem; font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-desc {
+      color: var(--muted); font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+      .timeline { padding-left: 1.5rem; }
+      .timeline-dot { left: -1.5rem; width: 12px; height: 12px; }
+    }
+
+    /* === SPECS === */
+    .specs {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .spec-item label {
+      display: block; color: var(--muted);
+      font-size: 0.75rem; margin-bottom: 0.2rem;
+    }
+
+    .spec-item val {
+      color: var(--accent); font-size: 1rem; font-weight: 600;
+    }
+
+    /* === INTERACTIVE TERMINAL === */
+    .terminal-section {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      max-width: 800px; margin: 0 auto;
+    }
+
+    .terminal-header {
+      background: #181926; padding: 0.7rem 1rem;
+      display: flex; align-items: center; gap: 0.45rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-header .term-title { font-size: 0.75rem; color: var(--muted); }
+
+    .td { width: 10px; height: 10px; border-radius: 50%; }
+    .td-r { background: #ef4444; } .td-y { background: #f59e0b; } .td-g { background: #10b981; }
+
+    .terminal-output {
+      height: 300px; overflow-y: auto;
+      padding: 1rem; font-family: 'Fira Code', monospace;
+      font-size: 0.85rem; line-height: 1.7;
+      color: #cbd5e1;
+    }
+    .terminal-output::-webkit-scrollbar { width: 6px; }
+    .terminal-output::-webkit-scrollbar-track { background: var(--bg); }
+    .terminal-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .terminal-line { margin-bottom: 0.25rem; white-space: pre-wrap; word-wrap: break-word; }
+    .terminal-line.cmd { color: var(--accent); }
+    .terminal-line.out { color: #cbd5e1; }
+    .terminal-line.err { color: #ef4444; }
+    .terminal-line.help { color: var(--muted); }
+
+    .terminal-input-line {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1rem; border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .terminal-prompt { color: var(--accent); font-family: 'Fira Code', monospace; font-size: 0.85rem; flex-shrink: 0; }
+    .terminal-input {
+      flex: 1; background: transparent; border: none;
+      color: var(--text); font-family: 'Fira Code', monospace;
+      font-size: 0.85rem; outline: none; width: 100%;
+    }
+    .terminal-input::placeholder { color: var(--muted); opacity: 0.5; }
+
+    /* === CONTACT === */
+    .cta {
+      text-align: center; padding: 4rem 2rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    .cta h2 { margin-bottom: 1rem; }
+    .cta p { color: var(--muted); max-width: 500px; margin: 0 auto 2rem auto; }
+
+    footer {
+      padding: 3rem 0; text-align: center;
+      color: var(--muted); font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* === ANIMATIONS === */
+    .reveal { opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+  </style>
+</head>
+<body>
+
+  <header id="hdr">
+    <div class="container nav">
+      <div class="brand"><div class="dot"></div> {site.brand}</div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-links" id="nav-links">
+        <a href="#about">about</a>
+        <a href="#skills">skills</a>
+        <a href="#experience">experience</a>
+        <a href="#projects">projects</a>
+        <a href="#homelab">homelab</a>
+        <a href="#terminal">terminal</a>
+        <a href="#contact">contact</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- HERO -->
+    <section class="hero" style="border:none;">
+      <img src="/bayu.png" alt={hero.name} class="hero-photo" />
+      <div class="hero-content">
+        <div class="badge">● {site.status}</div>
+        <h1>Hi, I'm {hero.name}.</h1>
+        <p>{hero.description}</p>
+        <div class="btns">
+          {hero.cta.map((btn) => (
+            <a href={btn.href} class={`btn ${btn.primary ? 'btn-primary' : 'btn-ghost'}`}>{btn.label}</a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <style>
+      .hero {
+        position: relative;
+        overflow: hidden;
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        grid-template-columns: 1fr;
+      }
+      .hero-photo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+        z-index: 0;
+        opacity: 0;
+        mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+        pointer-events: none;
+      }
+      .hero-photo.visible {
+        opacity: 0.5;
+      }
+      .hero-content {
+        position: relative;
+        z-index: 1;
+      }
+      @media (max-width: 768px) {
+        .hero { min-height: 100vh; }
+        .hero-photo { object-position: top center; opacity: 0.35 !important; }
+        .hero-content { text-align: center; }
+        .btns { justify-content: center; }
+      }
+    </style>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <h2 class="sec-head">{about.title}</h2>
+      <p class="sec-desc">{about.subtitle}</p>
+      <div class="grid">
+        {about.cards.map((card, i) => (
+          <div class={`card reveal ${i === 1 ? 'reveal-d1' : ''}`}>
+            <h3>{card.title}</h3>
+            <p>{card.text}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- SKILLS / TECH STACK -->
+    <section id="skills">
+      <h2 class="sec-head">{skills.title}</h2>
+      <p class="sec-desc">Technologies I work with daily, organized by category.</p>
+      <div class="skills-tabs" id="skills-tabs" role="tablist" aria-label="Skill categories">
+        <button class="skill-tab active" data-category="all" role="tab" aria-selected="true" aria-controls="panel-all">All</button>
+        {skills.categories.map((cat) => (
+          <button class="skill-tab" data-category={cat.name.toLowerCase().replace('/', '').replace(' ', '')} role="tab" aria-selected="false" aria-controls={`panel-${cat.name}`}>{cat.name}</button>
+        ))}
+      </div>
+      <div class="skills-grid" id="skills-grid">
+        {skills.categories.map((cat) =>
+          cat.items.map((item) => (
+            <div class="skill-tag" data-category={cat.name.toLowerCase().replace('/', '').replace(' ', '')}>
+              <div class="skill-tag-name">{item}</div>
+              <div class="skill-tag-category">{cat.name}</div>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+
+    <!-- EXPERIENCE TIMELINE -->
+    <section id="experience">
+      <h2 class="sec-head">Experience</h2>
+      <p class="sec-desc">Professional journey and key roles.</p>
+      <div class="timeline" id="timeline">
+        {experience.map((item, i) => (
+          <div class={`timeline-item reveal ${i === 1 ? 'reveal-d1' : i === 2 ? 'reveal-d2' : ''}`}>
+            <div class="timeline-dot"></div>
+            <div class="timeline-date">{item.year}</div>
+            <h3 class="timeline-title">{item.title}</h3>
+            <p class="timeline-desc">{item.description}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects">
+      <h2 class="sec-head">Featured Projects</h2>
+      <p class="sec-desc">Beberapa project utama yang gw kembangkan sendiri.</p>
+      <div class="grid">
+        {projects.map((project, i) => (
+          <div class={`card reveal ${i === 1 ? 'reveal-d1' : i === 2 ? 'reveal-d2' : ''}`}>
+            <h3>{project.title}</h3>
+            <p>{project.description}</p>
+            <div class="tags">
+              {project.tags.map((tag) => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- HOMELAB -->
+    <section id="homelab">
+      <h2 class="sec-head">{homelab.title}</h2>
+      <p class="sec-desc">Spesifikasi hardware dan environment server pribadi.</p>
+      <div class="specs">
+        <div class="specs-grid">
+          {homelab.specs.map((spec) => (
+            <div class="spec-item">
+              <label>// {spec.label.toUpperCase()}</label>
+              <val>{spec.value}</val>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE TERMINAL PLAYGROUND -->
+    <section id="terminal">
+      <h2 class="sec-head">{terminal.title}</h2>
+      <p class="sec-desc">Type commands to explore this portfolio. Try <code>help</code> for available commands.</p>
+      <div class="terminal-section reveal">
+        <div class="terminal-header">
+          <div class="td td-r"></div><div class="td td-y"></div><div class="td td-g"></div>
+          <span class="term-title">bayu@portfolio ~</span>
+        </div>
+        <div class="terminal-output" id="terminal-output" role="log" aria-live="polite" aria-label="Terminal output"></div>
+        <div class="terminal-input-line">
+          <span class="terminal-prompt">$</span>
+          <input type="text" class="terminal-input" id="terminal-input" placeholder="Type a command..." autocomplete="off" spellcheck="false" aria-label="Terminal command input" />
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="cta">
+        <h2 class="sec-head">{contact.title}</h2>
+        <p>{contact.subtitle}</p>
+        <div class="btns" style="justify-content:center;">
+          {contact.links.map((link) => (
+            <a href={link.url} target="_blank" rel="noopener noreferrer" class={`btn ${link.label === 'Telegram' ? 'btn-primary' : 'btn-ghost'}`}>{link.label}</a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2026 {hero.name} · Built with Astro · Deployed via Cloudflare Pages</p>
+    </footer>
+  </div>
+
+  <script>
+    // Floating pill navbar - hide on scroll down, show on scroll up
+    const hdr = document.getElementById('hdr');
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        hdr.classList.add('hidden');
+      } else {
+        hdr.classList.remove('hidden');
+      }
+      lastScrollY = currentScrollY;
+    });
+
+    // Mobile hamburger menu
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('nav-links');
+    hamburger.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      hamburger.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', isOpen);
+    });
+    // Close menu when clicking a link
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // Scroll reveal
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('section, .reveal, .timeline-item, .skill-tag, .hero-photo').forEach(el => io.observe(el));
+
+    // Skills filter
+    const skillTabs = document.querySelectorAll('.skill-tab');
+    const skillTags = document.querySelectorAll('.skill-tag');
+    skillTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const category = tab.dataset.category;
+        skillTabs.forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        skillTags.forEach(tag => {
+          if (category === 'all' || tag.dataset.category === category) {
+            tag.classList.remove('hidden');
+            tag.style.opacity = '0';
+            tag.style.transform = 'translateY(10px)';
+            requestAnimationFrame(() => {
+              tag.style.opacity = '1';
+              tag.style.transform = 'translateY(0)';
+            });
+          } else {
+            tag.classList.add('hidden');
+          }
+        });
+      });
+    });
+
+    // Interactive Terminal
+    const terminalOutput = document.getElementById('terminal-output');
+    const terminalInput = document.getElementById('terminal-input');
+    let commandHistory = [];
+    let historyIndex = -1;
+
+    const commands = {
+      help: () => [
+        'Available commands:',
+        '  help           - Show this help message',
+        '  about          - Show bio information',
+        '  skills         - List tech stack',
+        '  projects       - Show featured projects',
+        '  contact        - Show contact links',
+        '  whoami         - Display current user',
+        '  ls             - List files in home directory',
+        '  cat README.md  - Show bio file',
+        '  clear          - Clear terminal screen',
+        '  date           - Show current date and time',
+      ].join('\n'),
+      about: () => [
+        'Bayu Ariyadi — CS Graduate, Homelab Builder & AI Enthusiast',
+        '',
+        'Computer Science graduate with deep interest in software',
+        'architecture, distributed systems, and AI integration.',
+        'Always curious about how systems work from low-level to',
+        'high-level orchestration.',
+        '',
+        'Philosophy: Great software must be efficient, free of bloat,',
+        'and functional. Avoiding AI slop in both design and code.',
+        'Prioritizing clarity, speed, and minimalist but characterful aesthetics.',
+      ].join('\n'),
+      skills: () => [
+        'Technical Skills:',
+        '',
+        'Languages:       Python, JavaScript, TypeScript, Go, Bash',
+        'Frameworks:      Astro, React, FastAPI, Express',
+        'DevOps:          Docker, Proxmox VE, Cloudflare, Tailscale, Git',
+        'AI/ML:           LLM Integration, Hermes Agent, Prompt Engineering, RAG',
+      ].join('\n'),
+      projects: () => [
+        'Featured Projects:',
+        '',
+        '1. Hermes Agent & Telegram Bot',
+        '   Autonomous AI agent on Proxmox homelab, Telegram integration,',
+        '   custom LLM endpoint, 1M token context, isolated sandbox profile.',
+        '   Tags: Python, Hermes, Telegram API, Docker',
+        '',
+        '2. 9Router AI Gateway',
+        '   Self-hosted AI routing gateway with 95+ LLM models',
+        '   (Claude 4.5, GPT-5, Gemini, DeepSeek). Single API endpoint,',
+        '   automatic failover and load balancing.',
+        '   Tags: AI Gateway, Multi-Model, REST API',
+        '',
+        '3. This Portfolio',
+        '   Personal website built with Astro, anti-slop design principles.',
+        '   Terminal aesthetics, scroll animations, no glassmorphism.',
+        '   Tags: Astro, TypeScript, CSS, Cloudflare Pages',
+      ].join('\n'),
+      contact: () => [
+        'Contact Links:',
+        '',
+        '  Telegram:  https://t.me/bayuariyadi',
+        '  GitHub:    https://github.com/bayuariyadi',
+        '',
+        'Open to collaboration, homelab discussions, or tech/anime chat.',
+      ].join('\n'),
+      whoami: () => 'bayu',
+      ls: () => [
+        'README.md',
+        'projects/',
+        'skills/',
+        'homelab/',
+        'contact.txt',
+      ].join('  '),
+      'cat README.md': () => [
+        '# Bayu Ariyadi',
+        '',
+        'CS Graduate | Homelab Builder | AI Enthusiast',
+        '',
+        'Building autonomous AI agents and self-hosted infrastructure.',
+        'Running Hermes Agent on Proxmox VE with Telegram integration.',
+        'Operating 9Router — a multi-model AI gateway with 95+ LLMs.',
+        '',
+        'Philosophy: Efficient, bloat-free, functional software.',
+        'No AI slop. Clean code, clear design, real utility.',
+        '',
+        'Contact: @bayuariyadi (Telegram) | github.com/bayuariyadi',
+      ].join('\n'),
+      clear: () => { terminalOutput.innerHTML = ''; return ''; },
+      date: () => new Date().toString(),
+    };
+
+    function appendLine(text, className = 'out') {
+      const line = document.createElement('div');
+      line.className = `terminal-line ${className}`;
+      line.textContent = text;
+      terminalOutput.appendChild(line);
+      terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    function typeLines(text, className = 'out', delay = 10) {
+      return new Promise(resolve => {
+        const lines = text.split('\n');
+        let i = 0;
+        function next() {
+          if (i < lines.length) {
+            appendLine(lines[i], className);
+            i++;
+            setTimeout(next, delay);
+          } else {
+            resolve();
+          }
+        }
+        next();
+      });
+    }
+
+    async function processCommand(cmd) {
+      const trimmed = cmd.trim();
+      if (!trimmed) return;
+
+      commandHistory.push(trimmed);
+      historyIndex = commandHistory.length;
+
+      appendLine(`$ ${trimmed}`, 'cmd');
+
+      const parts = trimmed.split(' ');
+      const baseCmd = parts[0].toLowerCase();
+
+      if (baseCmd === 'help') {
+        await typeLines(commands.help(), 'help', 5);
+      } else if (baseCmd === 'about') {
+        await typeLines(commands.about(), 'out', 5);
+      } else if (baseCmd === 'skills') {
+        await typeLines(commands.skills(), 'out', 5);
+      } else if (baseCmd === 'projects') {
+        await typeLines(commands.projects(), 'out', 5);
+      } else if (baseCmd === 'contact') {
+        await typeLines(commands.contact(), 'out', 5);
+      } else if (baseCmd === 'whoami') {
+        await typeLines(commands.whoami(), 'out', 5);
+      } else if (baseCmd === 'ls') {
+        await typeLines(commands.ls(), 'out', 5);
+      } else if (trimmed.toLowerCase() === 'cat readme.md') {
+        await typeLines(commands['cat README.md'](), 'out', 5);
+      } else if (baseCmd === 'clear') {
+        commands.clear();
+      } else if (baseCmd === 'date') {
+        await typeLines(commands.date(), 'out', 5);
+      } else {
+        appendLine(`Command not found: ${trimmed}. Type 'help' for available commands.`, 'err');
+      }
+    }
+
+    terminalInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        const cmd = terminalInput.value;
+        terminalInput.value = '';
+        await processCommand(cmd);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (historyIndex > 0) {
+          historyIndex--;
+          terminalInput.value = commandHistory[historyIndex];
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex < commandHistory.length - 1) {
+          historyIndex++;
+          terminalInput.value = commandHistory[historyIndex];
+        } else {
+          historyIndex = commandHistory.length;
+          terminalInput.value = '';
+        }
+      }
+    });
+
+    // Initial welcome message
+    (async () => {
+      await typeLines('Welcome to bayu.dev interactive terminal', 'help', 20);
+      await typeLines('Type "help" for available commands', 'help', 20);
+      appendLine('');
+    })();
+  </script>
+</body>
+</html>

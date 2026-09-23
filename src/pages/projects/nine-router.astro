@@ -1,0 +1,480 @@
+---
+const title = "9Router AI Gateway — Bayu Ariyadi";
+const description = "Self-hosted AI routing gateway aggregating 95+ LLM models behind one OpenAI-compatible API endpoint with automatic failover and load balancing.";
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="generator" content={Astro.generator} />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card: #12131c;
+      --border: #1e2030;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #10b981;
+      --accent-dim: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.12);
+      --tag: #1a1c2e;
+      --tag-border: #262940;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    code, .mono { font-family: 'Fira Code', monospace; }
+
+    a { color: var(--accent); text-decoration: none; transition: all 0.2s; }
+    a:hover { color: var(--accent-dim); }
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* === NAV === */
+    header {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(9, 10, 15, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100; padding: 0.9rem 0;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+    header.visible { transform: translateY(0); }
+
+    nav { display: flex; justify-content: space-between; align-items: center; }
+
+    .brand {
+      font-family: 'Fira Code', monospace;
+      font-weight: 700; font-size: 1.05rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .nav-links { display: flex; gap: 2rem; font-size: 0.95rem; font-weight: 500; }
+    .nav-links a { color: var(--muted); }
+    .nav-links a:hover { color: var(--text); }
+
+    /* === HERO === */
+    .hero {
+      padding: 10rem 0 5rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--tag); border: 1px solid var(--tag-border);
+      padding: 0.3rem 0.9rem; border-radius: 20px;
+      font-size: 0.8rem; color: var(--accent); margin-bottom: 1.5rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 3.8rem);
+      font-weight: 800; letter-spacing: -0.03em;
+      line-height: 1.1; margin-bottom: 1rem;
+    }
+
+    .hero p {
+      color: var(--muted); font-size: 1.1rem; margin-bottom: 2rem;
+    }
+
+    .btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer;
+      transition: all 0.25s; font-family: inherit;
+    }
+
+    .btn-primary { background: var(--accent); color: #090a0f; border: none; }
+    .btn-primary:hover {
+      background: var(--accent-dim); color: #090a0f;
+      transform: translateY(-2px); box-shadow: 0 6px 24px var(--accent-glow);
+    }
+
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent); color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* === SECTIONS === */
+    section {
+      padding: 5rem 0; border-top: 1px solid var(--border);
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    section.visible { opacity: 1; transform: translateY(0); }
+
+    .sec-head {
+      font-size: 2rem; font-weight: 700;
+      margin-bottom: 0.4rem; letter-spacing: -0.02em;
+    }
+
+    .sec-desc { color: var(--muted); margin-bottom: 3rem; }
+
+    /* === CARDS === */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem;
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      border-color: rgba(16,185,129,0.35);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    }
+
+    .card h3 {
+      font-size: 1.2rem; font-weight: 600;
+      margin-bottom: 0.75rem; color: var(--text);
+    }
+
+    .card p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.25rem; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    .tag {
+      background: var(--tag); border: 1px solid var(--tag-border);
+      color: var(--muted); padding: 0.2rem 0.65rem;
+      border-radius: 5px; font-size: 0.75rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* === SPECS === */
+    .specs {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .spec-item label {
+      display: block; color: var(--muted);
+      font-size: 0.75rem; margin-bottom: 0.2rem;
+    }
+
+    .spec-item val {
+      color: var(--accent); font-size: 1rem; font-weight: 600;
+    }
+
+    /* === ARCHITECTURE DIAGRAM === */
+    .arch-diagram {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2.5rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 2;
+      overflow-x: auto;
+    }
+
+    .arch-line { color: var(--muted); }
+    .arch-box {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--tag);
+      color: var(--text);
+      margin: 0 0.25rem;
+    }
+    .arch-box.primary { border-color: var(--accent); color: var(--accent); }
+    .arch-arrow { color: var(--accent); margin: 0 0.5rem; }
+
+    /* === FEATURE LIST === */
+    .feature-list { display: grid; gap: 1rem; }
+    .feature-item {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 1.5rem; background: var(--card);
+      border: 1px solid var(--border); border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    .feature-item:hover {
+      border-color: rgba(16,185,129,0.35);
+    }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 8px;
+      background: var(--accent-glow); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .feature-content h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .feature-content p { color: var(--muted); font-size: 0.9rem; }
+
+    footer {
+      padding: 3rem 0; text-align: center;
+      color: var(--muted); font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* === ANIMATIONS === */
+    .reveal { opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+  </style>
+</head>
+<body>
+
+  <header id="hdr">
+    <div class="container nav">
+      <div class="brand"><div class="dot"></div> bayu.dev</div>
+      <div class="nav-links">
+        <a href="/">home</a>
+        <a href="/#projects">projects</a>
+        <a href="/#homelab">homelab</a>
+        <a href="/#contact">contact</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- HERO -->
+    <section class="hero" style="border:none;">
+      <div class="reveal">
+        <div class="badge">● AI Gateway</div>
+        <h1>9Router AI Gateway</h1>
+        <p>
+          Self-hosted AI routing gateway that aggregates 95+ LLM models behind one OpenAI-compatible API endpoint.
+          Built for homelab deployment with automatic failover, load balancing, and intelligent model routing.
+        </p>
+        <div class="btns">
+          <a href="https://github.com/bayuariyadi/9router" target="_blank" class="btn btn-primary">View on GitHub</a>
+          <a href="/" class="btn btn-ghost">Back to Home</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHAT IT DOES -->
+    <section id="what-it-does">
+      <h2 class="sec-head reveal">What It Does</h2>
+      <p class="sec-desc reveal">Core functionality and purpose of the gateway.</p>
+      <div class="card reveal reveal-d1">
+        <h3>Unified AI Access Layer</h3>
+        <p>
+          9Router sits between your applications and dozens of LLM providers. Instead of managing multiple API keys,
+          rate limits, and SDKs, you point your code at a single OpenAI-compatible endpoint. The gateway handles
+          model selection, request routing, failover, and load balancing transparently.
+        </p>
+        <p style="margin-top: 1rem;">
+          Deploy it on your homelab, VPS, or Kubernetes cluster. No vendor lock-in. Full control over your data and routing logic.
+        </p>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <h2 class="sec-head reveal">Features</h2>
+      <p class="sec-desc reveal">Built-in capabilities that ship with 9Router.</p>
+      <div class="feature-list">
+        <div class="feature-item reveal">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+          <div class="feature-content">
+            <h4>Multi-Model Routing</h4>
+            <p>Route requests to 95+ models including GPT-5, Gemini, DeepSeek, Claude, and open-source models based on task type, cost, or latency requirements.</p>
+          </div>
+        </div>
+        <div class="feature-item reveal reveal-d1">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9a9 9 0 0 0 9-9"/></svg></div>
+          <div class="feature-content">
+            <h4>Automatic Failover</h4>
+            <p>When a provider goes down or hits rate limits, 9Router automatically retries on healthy backends. Zero-downtime fallback without application changes.</p>
+          </div>
+        </div>
+        <div class="feature-item reveal reveal-d2">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
+          <div class="feature-content">
+            <h4>Load Balancing</h4>
+            <p>Distribute traffic across multiple providers and model instances using weighted round-robin, least-connections, or latency-aware algorithms.</p>
+          </div>
+        </div>
+        <div class="feature-item reveal reveal-d3">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div>
+          <div class="feature-content">
+            <h4>OpenAI-Compatible API</h4>
+            <p>Drop-in replacement for the OpenAI Chat Completions API. Existing code using the OpenAI SDK works without modification.</p>
+          </div>
+        </div>
+        <div class="feature-item reveal reveal-d4">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <div class="feature-content">
+            <h4>95+ Models Supported</h4>
+            <p>GPT-5, GPT-4o, o1, Gemini 2.5, DeepSeek V3, DeepSeek R1, Claude 4.5 Sonnet, Qwen 2.5, Llama 3.3, and many more across 15+ providers.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <h2 class="sec-head reveal">Architecture</h2>
+      <p class="sec-desc reveal">High-level request flow through the gateway.</p>
+      <div class="arch-diagram reveal reveal-d1">
+<div class="arch-line">┌─────────────────────────────────────────────────────────────────────────────┐</div>
+<div class="arch-line">│                              REQUEST FLOW                                   │</div>
+<div class="arch-line">└─────────────────────────────────────────────────────────────────────────────┘</div>
+<div class="arch-line"></div>
+<div class="arch-line">   ┌──────────┐                                                               </div>
+<div class="arch-line">   │  Client  │                                                               </div>
+<div class="arch-line">   │ (Your App)│                                                               </div>
+<div class="arch-line">   └────┬─────┘                                                               </div>
+<div class="arch-line">        │                                                                    </div>
+<div class="arch-line">        │  POST /v1/chat/completions                                         </div>
+<div class="arch-line">        │  &#123; model: "gpt-5", messages: [] &#125;                          </div>
+<div class="arch-line">        ▼                                                                    </div>
+<div class="arch-line">   ┌──────────────────────┐                                                  </div>
+<div class="arch-line">   │  <span class="arch-box primary">9Router API Gateway</span>  │  ◄── Single OpenAI-compatible endpoint    </div>
+<div class="arch-line">   │  (Port 4000)         │                                                  </div>
+<div class="arch-line">   └─────────┬────────────┘                                                  </div>
+<div class="arch-line">             │                                                               </div>
+<div class="arch-line">             │  1. Parse request                                              </div>
+<div class="arch-line">             │  2. Select routing strategy                                    </div>
+<div class="arch-line">             │  3. Apply policies (cost/latency)                              </div>
+<div class="arch-line">             ▼                                                               </div>
+<div class="arch-line">   ┌──────────────────────┐                                                  </div>
+<div class="arch-line">   │  <span class="arch-box primary">Model Router</span>           │  ◄── Intelligent routing engine            </div>
+<div class="arch-line">   │  • Strategy Engine   │                                                  </div>
+<div class="arch-line">   │  • Health Checks     │                                                  </div>
+<div class="arch-line">   │  • Circuit Breakers  │                                                  </div>
+<div class="arch-line">   └─────────┬────────────┘                                                  </div>
+<div class="arch-line">             │                                                               </div>
+<div class="arch-line">     ┌───────┼───────┐                                                       </div>
+<div class="arch-line">     ▼       ▼       ▼                                                       </div>
+<div class="arch-line">┌─────────┐ ┌─────────┐ ┌─────────┐                                         </div>
+<div class="arch-line">│<span class="arch-box">Provider A</span>│ │<span class="arch-box">Provider B</span>│ │<span class="arch-box">Provider C</span>│  ... 95+ models                            </div>
+<div class="arch-line">│OpenAI   │ │Anthropic│ │Google   │                                         </div>
+<div class="arch-line">│GPT-5    │ │Claude 4.5│ │Gemini 2.5│                                        </div>
+<div class="arch-line">└─────────┘ └─────────┘ └─────────┘                                         </div>
+<div class="arch-line">     │       │       │                                                      </div>
+<div class="arch-line">     └───────┼───────┘                                                      </div>
+<div class="arch-line">             │  Response                                                     </div>
+<div class="arch-line">             ▼                                                               </div>
+<div class="arch-line">   ┌──────────────────────┐                                                  </div>
+<div class="arch-line">   │  <span class="arch-box primary">9Router API Gateway</span>  │  ◄── Normalize, transform, return          </div>
+<div class="arch-line">   └─────────┬────────────┘                                                  </div>
+<div class="arch-line">             │                                                               </div>
+<div class="arch-line">             ▼                                                               </div>
+<div class="arch-line">   ┌──────────┐                                                               </div>
+<div class="arch-line">   │  Client  │                                                               </div>
+<div class="arch-line">   │  Receives│                                                               </div>
+<div class="arch-line">   │  Response│                                                               </div>
+<div class="arch-line">   └──────────┘                                                               </div>
+      </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section id="tech-stack">
+      <h2 class="sec-head reveal">Tech Stack</h2>
+      <p class="sec-desc reveal">Core technologies powering 9Router.</p>
+      <div class="specs reveal reveal-d1">
+        <div class="specs-grid">
+          <div class="spec-item"><label>// LANGUAGE</label><val>TypeScript</val></div>
+          <div class="spec-item"><label>// RUNTIME</label><val>Node.js 20+ / Bun</val></div>
+          <div class="spec-item"><label>// FRAMEWORK</label><val>Hono / Fastify</val></div>
+          <div class="spec-item"><label>// DEPLOYMENT</label><val>Docker / Docker Compose</val></div>
+          <div class="spec-item"><label>// ORCHESTRATION</label><val>Kubernetes ready</val></div>
+          <div class="spec-item"><label>// CONFIG</label><val>YAML / Environment variables</val></div>
+          <div class="spec-item"><label>// MONITORING</label><val>Prometheus metrics / Grafana</val></div>
+          <div class="spec-item"><label>// LOGGING</label><val>Structured JSON (pino)</val></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KEY COMPONENTS -->
+    <section id="components">
+      <h2 class="sec-head reveal">Key Components</h2>
+      <p class="sec-desc reveal">Internal architecture modules.</p>
+      <div class="grid">
+        <div class="card reveal">
+          <h3>Strategy Engine</h3>
+          <p>Pluggable routing strategies: round-robin, weighted, latency-aware, cost-optimized, priority-based. Custom strategies via TypeScript interface.</p>
+          <div class="tags">
+            <span class="tag">TypeScript</span><span class="tag">Strategy Pattern</span>
+          </div>
+        </div>
+        <div class="card reveal reveal-d1">
+          <h3>Health Monitor</h3>
+          <p>Continuous provider health checks with configurable intervals. Circuit breaker pattern prevents cascade failures. Automatic recovery detection.</p>
+          <div class="tags">
+            <span class="tag">Circuit Breaker</span><span class="tag">Health Checks</span>
+          </div>
+        </div>
+        <div class="card reveal reveal-d2">
+          <h3>Model Registry</h3>
+          <p>Centralized model catalog with capabilities, pricing, context windows, and provider mappings. Hot-reloadable without restart.</p>
+          <div class="tags">
+            <span class="tag">Hot Reload</span><span class="tag">YAML Config</span>
+          </div>
+        </div>
+        <div class="card reveal reveal-d3">
+          <h3>Request Normalizer</h3>
+          <p>Transforms OpenAI-format requests to provider-specific schemas. Handles streaming, tool calls, structured outputs, and response formatting.</p>
+          <div class="tags">
+            <span class="tag">Streaming</span><span class="tag">Tools</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2026 Bayu Ariyadi · 9Router AI Gateway · <a href="/">Back to Portfolio</a></p>
+    </footer>
+
+  </div>
+
+  <script>
+    // Nav
+    const hdr = document.getElementById('hdr');
+    window.addEventListener('scroll', () => {
+      hdr.classList.toggle('visible', window.scrollY > 300);
+    });
+
+    // Scroll reveal
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('section, .reveal').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>
