@@ -1,0 +1,74 @@
+---
+import { getCollection, render } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(entry => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BlogLayout title={`${entry.data.title} | Bayu Ariyadi`} description={entry.data.description}>
+  <article class="blog-post">
+    <div class="post-header">
+      <a href="/blog" class="back-link">← Back to Blog</a>
+      <h1>{entry.data.title}</h1>
+      <div class="post-meta">
+        <time>{new Date(entry.data.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+        <div class="post-tags">
+          {entry.data.tags.map(tag => <span class="tag">{tag}</span>)}
+        </div>
+      </div>
+    </div>
+    
+    <div class="post-content">
+      <Content />
+    </div>
+  </article>
+</BlogLayout>
+
+<style>
+  .blog-post {
+    max-width: 800px;
+    margin: 8rem auto 4rem auto;
+    padding: 0 1.5rem;
+    color: var(--text);
+  }
+  
+  .back-link {
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    margin-bottom: 2rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+  }
+  .back-link:hover { opacity: 0.8; }
+  
+  h1 { font-size: 2.5rem; line-height: 1.2; margin-bottom: 1rem; font-family: 'Plus Jakarta Sans', sans-serif; }
+  
+  .post-meta { display: flex; gap: 1rem; align-items: center; margin-bottom: 3rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
+  time { color: var(--accent); font-family: 'Fira Code', monospace; font-size: 0.9rem; }
+  
+  .post-content :global(h2) { font-size: 1.8rem; margin-top: 3rem; margin-bottom: 1rem; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .post-content :global(h3) { font-size: 1.4rem; margin-top: 2rem; margin-bottom: 0.5rem; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; }
+  
+  .post-content :global(p) { color: var(--muted); margin-bottom: 1.5rem; line-height: 1.8; font-size: 1.05rem; }
+  
+  .post-content :global(pre) { background: #0d0e14; padding: 1.5rem; border-radius: 8px; overflow-x: auto; margin: 2rem 0; border: 1px solid var(--border); font-family: 'Fira Code', monospace; font-size: 0.9rem; color: var(--muted); }
+  .post-content :global(code) { font-family: 'Fira Code', monospace; font-size: 0.9em; background: rgba(16, 185, 129, 0.1); padding: 0.1rem 0.3rem; border-radius: 4px; color: var(--accent); }
+  .post-content :global(pre code) { background: none; padding: 0; border-radius: 0; color: inherit; }
+  
+  .post-content :global(ul), .post-content :global(ol) { color: var(--muted); margin-bottom: 1.5rem; padding-left: 2rem; }
+  .post-content :global(li) { margin-bottom: 0.5rem; line-height: 1.6; }
+  
+  .post-tags { display: flex; gap: 0.5rem; }
+  .tag { background: var(--tag); color: var(--accent); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-family: 'Fira Code', monospace; border: 1px solid var(--tag-border); }
+</style>

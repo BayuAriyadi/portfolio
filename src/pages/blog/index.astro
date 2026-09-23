@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+
+const posts = (await getCollection('blog'))
+  .filter(p => !p.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BlogLayout title="Blog | Bayu Ariyadi">
+  <div class="blog-container">
+    <h1>Blog</h1>
+    <p class="subtitle">Technical deep dives, homelab explorations, and project updates.</p>
+    
+    <div class="post-list">
+      {posts.map(post => (
+        <a href={`/blog/${post.id}`} class="post-card reveal">
+          <time>{new Date(post.data.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+          <h2>{post.data.title}</h2>
+          <p>{post.data.description}</p>
+          <div class="post-tags">
+            {post.data.tags.map(tag => <span class="tag">{tag}</span>)}
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</BlogLayout>
+
+<style>
+  .blog-container {
+    max-width: 800px;
+    margin: 8rem auto 4rem auto;
+    padding: 0 1.5rem;
+    color: var(--text);
+  }
+  h1 { font-size: 2.5rem; margin-bottom: 1rem; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 3rem; }
+  
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .post-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: block;
+  }
+  .post-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  time { font-size: 0.85rem; color: var(--accent); font-family: 'Fira Code', monospace; }
+  h2 { font-size: 1.5rem; margin: 1rem 0 0.5rem 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+  p { color: var(--muted); margin-bottom: 1rem; line-height: 1.6; }
+  .post-tags { display: flex; gap: 0.5rem; }
+  .tag { background: var(--tag); color: var(--accent); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-family: 'Fira Code', monospace; border: 1px solid var(--tag-border); }
+</style>
