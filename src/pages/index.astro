@@ -458,19 +458,49 @@ const description = site.description;
       flex-direction: column;
       justify-content: space-between;
       min-height: 220px;
+      position: relative;
+      overflow: hidden;
+    }
+    .spotify-card {
+      position: relative;
+    }
+    .spotify-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: blur(25px) brightness(0.2);
+      transform: scale(1.2);
+      z-index: 0;
+      transition: background-image 0.5s ease;
+    }
+    .spotify-card > * {
+      position: relative;
+      z-index: 1;
     }
     .dashboard-header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 0.75rem;
       margin-bottom: 1rem;
       padding-bottom: 0.75rem;
       border-bottom: 1px solid var(--border);
     }
+    .spotify-header-content {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+    }
+    .spotify-header-content h3 {
+      margin: 0;
+      font-size: 1rem;
+      flex: 1;
+    }
     .dashboard-icon {
-      font-family: 'Fira Code', monospace;
       color: var(--accent);
-      font-size: 1.1rem;
+      flex-shrink: 0;
     }
     .dashboard-header h3 {
       margin: 0;
@@ -636,7 +666,9 @@ const description = site.description;
         <!-- GitHub Stats Card -->
         <div class="card dashboard-card">
           <div class="dashboard-header">
-            <span class="dashboard-icon">␣</span>
+            <svg class="dashboard-icon" viewBox="0 0 16 16" width="20" height="20" fill="currentColor">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
             <h3>GitHub Stats</h3>
             <a href="https://github.com/bayuariyadi" target="_blank" rel="noopener noreferrer" class="dashboard-link" aria-label="View GitHub profile">→</a>
           </div>
@@ -646,21 +678,35 @@ const description = site.description;
         </div>
 
         <!-- Spotify Now Playing Card -->
-        <div class="card dashboard-card">
+        <div class="card dashboard-card spotify-card" id="spotify-card">
+          <div class="spotify-bg" id="spotify-bg"></div>
           <div class="dashboard-header">
-            <span class="dashboard-icon">♪</span>
-            <h3>Now Playing</h3>
-            <a href="https://open.spotify.com/user/bayuariyadi" target="_blank" rel="noopener noreferrer" class="dashboard-link" aria-label="Open Spotify">→</a>
+            <div class="spotify-header-content">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <svg class="dashboard-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.6 17.5c-.3.5-.9.7-1.5.4-4.1-2.5-9.3-3.1-15.4-1.7-.6.2-1.2-.1-1.4-.7-.2-.6.1-1.2.7-1.4 6.7-1.6 12.6-.9 17.4 2 .5.3.7 1 .4 1.5zm1.5-3.3c-.4.6-1.1.8-1.7.4-4.7-2.9-11.9-3.7-17.5-2.1-.6.2-1.3-.1-1.5-.7-.2-.6.1-1.3.7-1.5 6.3-1.8 14.3-.9 19.8 2.4.6.3.8 1 .5 1.6zm.1-3.4c-5.7-3.4-15.1-3.7-20.5-2.1-.6.2-1.2-.1-1.4-.7-.2-.6.1-1.2.7-1.4 6-1.8 16 -1.4 22.2 2.4.5.3.7 1 .4 1.5-.3.5-1 .7-1.5.4z"/>
+                </svg>
+                <img id="spotify-avatar" src="https://github.com/bayuariyadi.png" alt="Profile" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" loading="lazy" />
+              </div>
+              <h3>Now Playing</h3>
+              <a href="https://open.spotify.com/user/bayuariyadi" target="_blank" rel="noopener noreferrer" class="dashboard-link" aria-label="Open Spotify Profile">→</a>
+            </div>
           </div>
           <div class="dashboard-content" id="spotify-dashboard">
             <div class="dashboard-loading">Loading…</div>
+          </div>
+          <div id="spotify-actions" style="margin-top:0.75rem; display:flex; gap:0.5rem;">
+            <a href="https://open.spotify.com/collection/playlists" target="_blank" rel="noopener noreferrer" class="dashboard-link" style="font-size:0.85rem; padding:0.25rem 0.5rem; border:1px solid var(--border); border-radius:0.25rem;">My Playlists</a>
           </div>
         </div>
 
         <!-- Homelab Status Card -->
         <div class="card dashboard-card">
           <div class="dashboard-header">
-            <span class="dashboard-icon">◈</span>
+            <svg class="dashboard-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="2" y1="20" x2="22" y2="20"></line>
+            </svg>
             <h3>Homelab Status</h3>
             <a href="http://192.168.1.101:9119" target="_blank" rel="noopener noreferrer" class="dashboard-link" aria-label="Open Hermes Dashboard">→</a>
           </div>
@@ -1049,14 +1095,22 @@ const description = site.description;
         const spRes = await fetch('/api/spotify');
         if (spRes.ok) {
           const sp = await spRes.json();
+          const bg = document.getElementById('spotify-bg');
           if (sp.isPlaying && sp.track) {
             const pct = Math.min(100, (sp.track.progressMs / sp.track.durationMs) * 100);
+            if (bg && sp.track.albumArt) bg.style.backgroundImage = `url(${sp.track.albumArt})`;
             document.getElementById('spotify-dashboard').innerHTML = `
-              <div class="now-playing-track">${sp.track.name}</div>
-              <div class="now-playing-artist">${sp.track.artist}</div>
+              <div style="display:flex; gap:0.75rem; align-items:center;">
+                ${sp.track.albumArt ? `<img src="${sp.track.albumArt}" alt="Album art" style="width:56px; height:56px; border-radius:8px; object-fit:cover; flex-shrink:0;" loading="lazy" />` : ''}
+                <div style="min-width:0;">
+                  <div class="now-playing-track">${sp.track.name}</div>
+                  <div class="now-playing-artist">${sp.track.artist}${sp.track.album ? ` — ${sp.track.album}` : ''}</div>
+                </div>
+              </div>
               <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
             `;
           } else {
+            if (bg) bg.style.backgroundImage = '';
             document.getElementById('spotify-dashboard').innerHTML = `
               <div style="font-style:italic; color:var(--muted);">Offline / Not listening</div>
               <div style="font-size:0.8rem; margin-top:0.5rem; color:var(--muted);">Spotify API ready</div>
@@ -1092,7 +1146,7 @@ const description = site.description;
     }
 
     loadDashboard();
-    setInterval(loadDashboard, 30000);
+    setInterval(loadDashboard, 10000);
 
     // Initial welcome message
     (async () => {
