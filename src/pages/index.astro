@@ -447,6 +447,88 @@ const description = site.description;
       border-top: 1px solid var(--border);
     }
 
+    /* === LIVE DASHBOARD CSS === */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .dashboard-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .dashboard-icon {
+      font-family: 'Fira Code', monospace;
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+    .dashboard-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      flex: 1;
+    }
+    .dashboard-link {
+      font-family: 'Fira Code', monospace;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .dashboard-link:hover {
+      color: var(--accent);
+    }
+    .dashboard-content {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .dashboard-loading {
+      color: var(--muted);
+      font-style: italic;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .stat-val {
+      font-family: 'Fira Code', monospace;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .now-playing-track {
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .now-playing-artist {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.3s linear;
+    }
+
     /* === ANIMATIONS === */
     .reveal { opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -467,6 +549,7 @@ const description = site.description;
       <div class="nav-links" id="nav-links">
         <a href="/blog">blog</a>
         <a href="#about">about</a>
+        <a href="#dashboard">live</a>
         <a href="#skills">skills</a>
         <a href="#experience">experience</a>
         <a href="#projects">projects</a>
@@ -542,6 +625,49 @@ const description = site.description;
             <p>{card.text}</p>
           </div>
         ))}
+      </div>
+    </section>
+
+    <!-- LIVE DASHBOARD -->
+    <section id="dashboard">
+      <h2 class="sec-head">Live Dashboard</h2>
+      <p class="sec-desc">Real-time data from GitHub, Spotify, and homelab infrastructure.</p>
+      <div class="dashboard-grid">
+        <!-- GitHub Stats Card -->
+        <div class="card dashboard-card">
+          <div class="dashboard-header">
+            <span class="dashboard-icon">␣</span>
+            <h3>GitHub Stats</h3>
+            <a href="https://github.com/bayuariyadi" target="_blank" rel="noopener noreferrer" class="dashboard-link" aria-label="View GitHub profile">→</a>
+          </div>
+          <div class="dashboard-content" id="github-dashboard">
+            <div class="dashboard-loading">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Spotify Now Playing Card -->
+        <div class="card dashboard-card">
+          <div class="dashboard-header">
+            <span class="dashboard-icon">♪</span>
+            <h3>Now Playing</h3>
+            <a href="https://open.spotify.com/user/bayuariyadi" target="_blank" rel="noopener noreferrer" class="dashboard-link" aria-label="Open Spotify">→</a>
+          </div>
+          <div class="dashboard-content" id="spotify-dashboard">
+            <div class="dashboard-loading">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Homelab Status Card -->
+        <div class="card dashboard-card">
+          <div class="dashboard-header">
+            <span class="dashboard-icon">◈</span>
+            <h3>Homelab Status</h3>
+            <a href="http://192.168.1.101:9119" target="_blank" rel="noopener noreferrer" class="dashboard-link" aria-label="Open Hermes Dashboard">→</a>
+          </div>
+          <div class="dashboard-content" id="status-dashboard">
+            <div class="dashboard-loading">Loading…</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -896,6 +1022,77 @@ const description = site.description;
         }
       }
     });
+
+    // Fetch Live Dashboard Data
+    async function loadDashboard() {
+      // GitHub
+      try {
+        const ghRes = await fetch('/api/github');
+        if (ghRes.ok) {
+          const gh = await ghRes.json();
+          document.getElementById('github-dashboard').innerHTML = `
+            <div class="stat-row"><span>Public Repos</span><span class="stat-val">${gh.publicRepos}</span></div>
+            <div class="stat-row"><span>Followers</span><span class="stat-val">${gh.followers}</span></div>
+            <div class="stat-row"><span>Total Stars</span><span class="stat-val">${gh.totalStars}</span></div>
+            <div class="stat-row" style="margin-top:0.75rem; font-size:0.8rem;">
+              <span>Top Langs:</span>
+              <span class="stat-val" style="font-size:0.8rem;">${gh.topLangs ? gh.topLangs.map(l => l[0]).join(', ') : 'Python, TS'}</span>
+            </div>
+          `;
+        }
+      } catch {
+        document.getElementById('github-dashboard').innerHTML = '<span style="color:#ef4444;">Failed to load</span>';
+      }
+
+      // Spotify
+      try {
+        const spRes = await fetch('/api/spotify');
+        if (spRes.ok) {
+          const sp = await spRes.json();
+          if (sp.isPlaying && sp.track) {
+            const pct = Math.min(100, (sp.track.progressMs / sp.track.durationMs) * 100);
+            document.getElementById('spotify-dashboard').innerHTML = `
+              <div class="now-playing-track">${sp.track.name}</div>
+              <div class="now-playing-artist">${sp.track.artist}</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+            `;
+          } else {
+            document.getElementById('spotify-dashboard').innerHTML = `
+              <div style="font-style:italic; color:var(--muted);">Offline / Not listening</div>
+              <div style="font-size:0.8rem; margin-top:0.5rem; color:var(--muted);">Spotify API ready</div>
+            `;
+          }
+        }
+      } catch {
+        document.getElementById('spotify-dashboard').innerHTML = '<span style="color:var(--muted);">Spotify offline</span>';
+      }
+
+      // Status
+      try {
+        const stRes = await fetch('/api/status');
+        if (stRes.ok) {
+          const st = await stRes.json();
+          if (st.online) {
+            document.getElementById('status-dashboard').innerHTML = `
+              <div class="stat-row"><span>Status</span><span class="stat-val" style="color:var(--accent);">● ONLINE</span></div>
+              <div class="stat-row"><span>Host</span><span class="stat-val">${st.hostname}</span></div>
+              <div class="stat-row"><span>CPU Usage</span><span class="stat-val">${st.cpu.usagePercent}%</span></div>
+              <div class="stat-row"><span>RAM Usage</span><span class="stat-val">${st.memory.percent}%</span></div>
+            `;
+          } else {
+            document.getElementById('status-dashboard').innerHTML = `
+              <div class="stat-row"><span>Status</span><span class="stat-val" style="color:#ef4444;">● OFFLINE</span></div>
+              <div style="font-size:0.8rem; color:var(--muted); margin-top:0.5rem;">Homelab agent unreachable</div>
+            `;
+          }
+        }
+      } catch {
+        document.getElementById('status-dashboard').innerHTML = '<span style="color:var(--muted);">Agent offline</span>';
+      }
+    }
+
+    loadDashboard();
+    setInterval(loadDashboard, 30000);
 
     // Initial welcome message
     (async () => {
