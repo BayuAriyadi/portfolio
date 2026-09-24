@@ -17,7 +17,6 @@ import type { APIRoute } from 'astro';
 
 const TOKEN_ENDPOINT = 'https://accounts.spotify.com/api/token';
 const NOW_PLAYING_ENDPOINT = 'https://api.spotify.com/v1/me/player/currently-playing';
-const CACHE = { data: null as any, ts: 0 };
 
 async function getAccessToken(): Promise<string> {
   const clientId = import.meta.env.SPOTIFY_CLIENT_ID;
@@ -47,12 +46,9 @@ async function getAccessToken(): Promise<string> {
   return json.access_token;
 }
 
-export const GET: APIRoute = async () => {
-  const now = Date.now();
-  if (CACHE.data && now - CACHE.ts < 15_000) {
-    return json(CACHE.data);
-  }
+export const prerender = false;
 
+export const GET: APIRoute = async () => {
   try {
     const token = await getAccessToken();
     const res = await fetch(NOW_PLAYING_ENDPOINT, {
@@ -61,10 +57,7 @@ export const GET: APIRoute = async () => {
 
     // 204 = nothing playing
     if (res.status === 204) {
-      const data = { isPlaying: false, track: null };
-      CACHE.data = data;
-      CACHE.ts = now;
-      return json(data);
+      return json({ isPlaying: false, track: null });
     }
 
     if (!res.ok) throw new Error('SPOTIFY_API_ERROR');
@@ -72,10 +65,7 @@ export const GET: APIRoute = async () => {
     const body = await res.json();
     const track = body?.item;
     if (!track) {
-      const data = { isPlaying: false, track: null };
-      CACHE.data = data;
-      CACHE.ts = now;
-      return json(data);
+      return json({ isPlaying: false, track: null });
     }
 
     const data = {
@@ -91,8 +81,6 @@ export const GET: APIRoute = async () => {
       },
     };
 
-    CACHE.data = data;
-    CACHE.ts = now;
     return json(data);
   } catch (err: any) {
     if (err.message === 'SPOTIFY_NOT_CONFIGURED') {
@@ -107,7 +95,7 @@ function json(data: unknown) {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'private, s-maxage=10',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
     },
   });
 }
